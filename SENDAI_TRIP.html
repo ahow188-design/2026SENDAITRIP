@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sendai Trip Planner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #f2f4f6;
+      --card-bg: #111827;
+      --card-bg-light: #ffffff;
+      --accent: #10b981;
+      --accent-soft: #d1fae5;
+      --text-main: #111827;
+      --text-sub: #6b7280;
+      --border-subtle: #e5e7eb;
+      --radius-xl: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-shell {
+      max-width: 480px;
+      width: 100%;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #e5eaef 0%, #f9fafb 40%);
+      padding: 16px 12px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .phone-frame {
+      background: #f9fafb;
+      border-radius: 36px;
+      padding: 16px 16px 12px;
+      box-shadow:
+        0 20px 40px rgba(15, 23, 42, 0.25),
+        0 0 0 1px rgba(15, 23, 42, 0.05);
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 64px);
+    }
+
+    header.app-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .app-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-items: center;
+    }
+
+    .app-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .app-subtitle {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .pill-tabs {
+      display: flex;
+      background: #e5e7eb;
+      border-radius: 999px;
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 8px;
+      width: 100%;
+    }
+
+    .pill-tab {
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: var(--text-sub);
+      font-weight: 500;
+      flex: 1;
+      text-align: center;
+    }
+
+    .pill-tab.active {
+      background: #111827;
+      color: #f9fafb;
+    }
+
+    main.app-main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 0 8px;
+    }
+
+    main.app-main::-webkit-scrollbar {
+      width: 4px;
+    }
+    main.app-main::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.7);
+      border-radius: 999px;
+    }
+
+    .section {
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+
+    .day-card {
+      margin-bottom: 10px;
+    }
+
+    .day-card details {
+      border-radius: 22px;
+      background: var(--card-bg);
+      color: #f9fafb;
+      padding: 10px 12px 4px;
+      box-shadow: 0 14px 24px rgba(15, 23, 42, 0.45);
+    }
+
+    .day-card summary {
+      list-style: none;
+      cursor: pointer;
+    }
+    .day-card summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .day-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .day-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .day-subtitle {
+      font-size: 10px;
+      color: #9ca3af;
+    }
+
+    .day-body {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 6px;
+    }
+
+    .spot-card {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 10px;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .spot-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.4);
+    }
+
+    .spot-time {
+      font-size: 11px;
+      color: #9ca3af;
+      min-width: 80px;
+    }
+
+    .spot-main {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .spot-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .spot-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .spot-extra {
+      font-size: 10px;
+      color: #d1d5db;
+    }
+
+    .spot-arrow {
+      font-size: 14px;
+      color: #6ee7b7;
+    }
+
+    .tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 500;
+    }
+
+    .tag-traffic { background: rgba(59, 130, 246, 0.18); color: #93c5fd; }
+    .tag-food { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; }
+    .tag-sight { background: rgba(251, 191, 36, 0.18); color: #fde68a; }
+    .tag-shopping { background: rgba(244, 63, 94, 0.18); color: #fb7185; }
+
+    .card-light {
+      background: var(--card-bg-light);
+      border-radius: 22px;
+      padding: 14px 14px 10px;
+      box-shadow: 0 12px 20px rgba(15, 23, 42, 0.12);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .section-desc {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-bottom: 10px;
+    }
+
+    .expense-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .field-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+    }
+
+    .field-label {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .field-input,
+    .field-select {
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      padding: 8px 12px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .field-input:focus,
+    .field-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35);
+    }
+
+    .expense-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .btn {
+      flex: 1;
+      border-radius: 999px;
+      border: none;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #022c22;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .expense-summary-block {
+      margin-top: 10px;
+    }
+
+    details.exp-block {
+      border-radius: 18px;
+      background: #f3f4f6;
+      padding: 6px 10px 8px;
+      margin-bottom: 6px;
+    }
+
+    details.exp-block summary {
+      list-style: none;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    details.exp-block summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .exp-summary-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .exp-chevron {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .expense-list {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .expense-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 8px;
+      border-radius: 12px;
+      background: #ffffff;
+      font-size: 11px;
+      box-shadow: 0 1px 2px rgba(15,23,42,0.05);
+    }
+
+    .expense-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .expense-title {
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .expense-meta {
+      color: var(--text-sub);
+    }
+
+    .expense-amount {
+      font-weight: 700;
+    }
+
+    .badge-day {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      font-size: 10px;
+      color: #0369a1;
+    }
+
+    .total-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      margin-top: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    .total-label {
+      opacity: 0.9;
+    }
+
+    .total-amount {
+      font-weight: 700;
+      color: #6ee7b7;
+    }
+
+    .expense-empty {
+      font-size: 11px;
+      color: var(--text-sub);
+      text-align: center;
+      padding: 8px 4px 4px;
+    }
+
+    .pie-wrapper {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+    }
+
+    canvas#expense-pie {
+      max-width: 100%;
+    }
+
+    .pie-legend {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 10px;
+    }
+
+    .pie-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pie-color-box {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+
+    @media (max-width: 480px) {
+      .app-shell {
+        padding: 8px;
+      }
+      .phone-frame {
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+	
+	.loople-img {
+	  width: 100%;
+	  max-width: 100%;
+	  border-radius: 16px;
+	  display: block;
+	}
+	.loople-block {
+	  margin-bottom: 8px;
+	}
+	
+	/* 全螢幕圖片放大用 */
+	.img-lightbox {
+	  position: fixed;
+	  inset: 0;
+	  background: rgba(0,0,0,0.85);
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	  padding: 20px;
+	  z-index: 9999;
+	  backdrop-filter: blur(4px);
+	  opacity: 0;
+	  pointer-events: none;
+	  transition: opacity .25s ease;
+	}
+
+	.img-lightbox.active {
+	  opacity: 1;
+	  pointer-events: auto;
+	}
+
+	.img-lightbox img {
+	  width: 100%;
+	  max-height: 100%;
+	  object-fit: contain;
+	  border-radius: 12px;
+	  box-shadow: 0 0 30px rgba(255,255,255,0.3);
+	}
+
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="phone-frame">
+      <header class="app-header">
+        <div class="app-title-block">
+          <div class="app-title">Sendai Trip</div>
+          <div class="app-subtitle">行程查詢與旅費記帳</div>
+        </div>
+      </header>
+
+      <div class="pill-tabs">
+        <button class="pill-tab active" data-section="itinerary">行程</button>
+        <button class="pill-tab" data-section="expense">記帳</button>
+      </div>
+
+      <main class="app-main">
+        <section id="section-itinerary" class="section active">
+      <!-- Day1 -->
+      <section class="day-card">
+        <details open>
+          <summary>
+            <div class="day-header">
+              <div class="day-title">Day1</div>
+              <div class="day-subtitle">Tap to expand / collapse</div>
+            </div>
+          </summary>
+          <div class="day-body">
+            <div class="spot-card">
+              <div class="spot-time">14:35–18:45</div>
+              <div class="spot-main">
+                <div class="spot-title">桃園 → 仙台（IT254）</div>
+                <div class="spot-meta"><span class="tag tag-traffic">交通</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+            <a class="spot-card" href="https://maps.app.goo.gl/kWs6PMJe66SocChs7" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">18:45–20:15</div>
+              <div class="spot-main">
+                <div class="spot-title">Check in 相鉄フレッサイン仙台</div>
+                <div class="spot-meta"><span class="tag tag-traffic">交通</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/Zd1HXLAyWEpUx7Yy6" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">20:15–21:00</div>
+              <div class="spot-main">
+                <div class="spot-title">たんや善治郎 五橋横丁別館(晚餐)</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Reservations: 現場</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <div class="spot-card">
+              <div class="spot-time">21:00–22:00</div>
+              <div class="spot-main">
+                <div class="spot-title">仙台站周邊散步</div>
+                <div class="spot-meta"><span class="tag tag-shopping">逛街</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Day2 -->
+      <section class="day-card">
+        <details>
+          <summary>
+            <div class="day-header">
+              <div class="day-title">Day2</div>
+              <div class="day-subtitle">Tap to expand / collapse</div>
+            </div>
+          </summary>
+          <div class="day-body">
+			<details class="loople-block">
+			 <summary class="spot-card" style="cursor: pointer;">
+			  <div class="spot-time">loople</div>
+			  <div class="spot-main">
+			   <div class="spot-title">loople時刻表</div>
+			   <div class="spot-meta">
+				<span class="tag tag-traffic">交通</span>
+			   </div>
+			  </div>
+			  <div class="spot-arrow">▼</div>
+			 </summary>
+			 <div style="margin-top: 8px;">
+			  <img src="Loople Time.jpg" alt="loople 時刻表" class="loople-img">
+			 </div>
+			</details>
+			<a class="spot-card" href="https://maps.app.goo.gl/fS8FRfRqijoNvRXu7" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">09:00–10:00</div>
+              <div class="spot-main">
+                <div class="spot-title">仙台朝市（早餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/7ebyuFpz9DRcdgbp7" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">10:00–12:00</div>
+              <div class="spot-main">
+                <div class="spot-title">瑞鳳寺</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/jtbNKerasoBAU6Ej9" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">12:00–15:00</div>
+              <div class="spot-main">
+                <div class="spot-title">仙台城跡</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/prQkya3ygh7Uvufy9" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">15:00–16:00</div>
+              <div class="spot-main">
+                <div class="spot-title">味 太助 本店（午餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Reservations: 現場</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/5WkYKAHCvkW8XwhR9" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">16:00–17:00</div>
+              <div class="spot-main">
+                <div class="spot-title">甘味処 彦いち（甜點）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Reservations: 現場</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <div class="spot-card">
+              <div class="spot-time">17:00–18:30</div>
+              <div class="spot-main">
+                <div class="spot-title">青葉通一番町</div>
+                <div class="spot-meta"><span class="tag tag-shopping">逛街</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+            <div class="spot-card">
+              <div class="spot-time">18:30–20:00</div>
+              <div class="spot-main">
+                <div class="spot-title">ハピナ名掛丁商店街</div>
+                <div class="spot-meta"><span class="tag tag-shopping">逛街</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+            <a class="spot-card" href="https://maps.app.goo.gl/sAci7XfuowfjYDEcA" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">20:00–22:00</div>
+              <div class="spot-main">
+                <div class="spot-title">呼炉凪来居酒屋（晚餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Reservations: Google</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+          </div>
+        </details>
+      </section>
+
+      <!-- Day3 -->
+      <section class="day-card">
+        <details>
+          <summary>
+            <div class="day-header">
+              <div class="day-title">Day3</div>
+              <div class="day-subtitle">Tap to expand / collapse</div>
+            </div>
+          </summary>
+          <div class="day-body">
+            <a class="spot-card" href="https://maps.app.goo.gl/d9EKHXCHCzLGXxuo8" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">09:00–10:00</div>
+              <div class="spot-main">
+                <div class="spot-title">トヨタレンタカー仙台駅西口</div>
+                <div class="spot-meta"><span class="tag tag-traffic">交通</span><span class="spot-extra">Map: 21 615 653*34</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/9L8xerb2u3TQXjXi8" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">10:00–11:00</div>
+              <div class="spot-main">
+                <div class="spot-title">地底の森ミュージアム</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span><span class="spot-extra">Map: 21 495 363*18</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/XQNFxJ5joKz3MuDYA" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">11:00–11:30</div>
+              <div class="spot-main">
+                <div class="spot-title">主婦の店 さいち</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Map: 464 507 812*24</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/U12Mpe9ivrZpySGd9" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">11:30–12:00</div>
+              <div class="spot-main">
+                <div class="spot-title">太田とうふ店</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Map: 464 648 710*65</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/RtzkhzdrefFh9QfB7" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">12:00–12:30</div>
+              <div class="spot-main">
+                <div class="spot-title">秋保大滝</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span><span class="spot-extra">Map: 464 672 412*31</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/huViUwYLAmrBPSny9" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">12:30–13:00</div>
+              <div class="spot-main">
+                <div class="spot-title">石窯ピザたつだ（午餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Map: 464 669 059*60</span><span class="spot-extra">Reservations: 現場</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/fEsxYAgyit6yjwoe9" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">13:00–15:30</div>
+              <div class="spot-main">
+                <div class="spot-title">天守閣自然公園（泡湯）</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span><span class="spot-extra">Map: 464 535 345*64</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/tDzfpwo1cdzHeu6r6" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">15:30–17:00</div>
+              <div class="spot-main">
+                <div class="spot-title">仙台万華鏡美術館</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span><span class="spot-extra">Map: 464 509 186*67</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/N54N86P1U4TyjVZy5" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">17:00–17:30</div>
+              <div class="spot-main">
+                <div class="spot-title">Check-in Route-Inn Natori</div>
+                <div class="spot-meta"><span class="tag tag-traffic">交通</span><span class="spot-extra">Map: 21 287 552*58</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/Xrcru5etgSFh79wL8" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">17:30–18:30</div>
+              <div class="spot-main">
+                <div class="spot-title">牛たんの店 一休（晚餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Reservations: 現場</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/nM31GPAYxLA97VhE7" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">18:30–19:30</div>
+              <div class="spot-main">
+                <div class="spot-title">ハードオフ</div>
+                <div class="spot-meta"><span class="tag tag-shopping">逛街</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/BTCQbwzZeBTBr27M7" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">19:30–21:00</div>
+              <div class="spot-main">
+                <div class="spot-title">Aeon Mall 名取</div>
+                <div class="spot-meta"><span class="tag tag-shopping">逛街</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+          </div>
+        </details>
+      </section>
+
+      <!-- Day4 -->
+      <section class="day-card">
+        <details>
+          <summary>
+            <div class="day-header">
+              <div class="day-title">Day4</div>
+              <div class="day-subtitle">Tap to expand / collapse</div>
+            </div>
+          </summary>
+          <div class="day-body">
+            <div class="spot-card">
+              <div class="spot-time">06:30–07:00</div>
+              <div class="spot-main">
+                <div class="spot-title">從名取出發</div>
+                <div class="spot-meta"><span class="tag tag-traffic">交通</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+            <a class="spot-card" href="https://maps.app.goo.gl/eDA5zf6fgDrwfrA97" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">07:00–08:00</div>
+              <div class="spot-main">
+                <div class="spot-title">ゆりあげ港朝市（早餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Map: 21 294 894*45</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/4p4V8yoE3tCR8LyTA" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">08:30–10:00</div>
+              <div class="spot-main">
+                <div class="spot-title">かわまちてらす閖上（甜點）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Map: 21 354 155*73</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/6iu3N4Ru2Qs1c3H98" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">10:00–11:30</div>
+              <div class="spot-main">
+                <div class="spot-title">イトーチェーン食彩館</div>
+                <div class="spot-meta"><span class="tag tag-shopping">逛街</span><span class="spot-extra">Map: 21 323 889*31</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/KJpW1D5ypYgXLxt58" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">11:30–12:30</div>
+              <div class="spot-main">
+                <div class="spot-title">金蛇水神社</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span><span class="spot-extra">Map: 21 130 029*52</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/gWhkTGH8bTUvYnA58" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">12:30–13:30</div>
+              <div class="spot-main">
+                <div class="spot-title">伊達の牛たん本舗 東インター店(午餐)</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Map: 21 594 671*65</span><span class="spot-extra">Reservations: 現場</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/trRmxgx1wCyH2mpM7" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">13:30–14:30</div>
+              <div class="spot-main">
+                <div class="spot-title">仙台うみの杜水族館</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span><span class="spot-extra">Map: 21 688 152*17</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/DYxStsZ7gDgFsjS38" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">14:30–16:30</div>
+              <div class="spot-main">
+                <div class="spot-title">三井Outlet Park 仙台港</div>
+                <div class="spot-meta"><span class="tag tag-shopping">逛街</span><span class="spot-extra">Map: 21 689 575*43</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/WEc8H95afsrxG11b9" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">16:30–17:00</div>
+              <div class="spot-main">
+                <div class="spot-title">Check-in：Dormy Inn EXPRESS</div>
+                <div class="spot-meta"><span class="tag tag-traffic">交通</span><span class="spot-extra">Map: 21 689 065*34</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/M2sDQ3t2Zper3mXK7" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">17:00–18:00</div>
+              <div class="spot-main">
+                <div class="spot-title">仙台牛たん 湊の小十郎（晚餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Map: 21 689 030*52</span><span class="spot-extra">Reservations: Google</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <div class="spot-card">
+              <div class="spot-time">19:30–21:30</div>
+              <div class="spot-main">
+                <div class="spot-title">大浴場＋夜鳴きそば</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Day5 -->
+      <section class="day-card">
+        <details>
+          <summary>
+            <div class="day-header">
+              <div class="day-title">Day5</div>
+              <div class="day-subtitle">Tap to expand / collapse</div>
+            </div>
+          </summary>
+          <div class="day-body">
+            <div class="spot-card">
+              <div class="spot-time">10:00–11:00</div>
+              <div class="spot-main">
+                <div class="spot-title">從 Dormy Inn 出發（早餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+            <a class="spot-card" href="https://maps.app.goo.gl/nq4evRndLQbt66Tm6" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">11:00–12:30</div>
+              <div class="spot-main">
+                <div class="spot-title">石ノ森萬画館</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span><span class="spot-extra">Map: 105 052 171*27</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/wKLC8P85CSnTmkay5" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">13:00–14:00</div>
+              <div class="spot-main">
+                <div class="spot-title">大高森：壮観</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span><span class="spot-extra">Map: 581 303 471*15</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/RNny1dhYZi5nH5Lu9" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">14:00–15:00</div>
+              <div class="spot-main">
+                <div class="spot-title">漁師直営牡蠣小屋（午餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Map: 110 443 767*12</span><span class="spot-extra">Reservations: 現場</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/zb72wfb9S1XcqyDN8" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">15:00–16:30</div>
+              <div class="spot-main">
+                <div class="spot-title">瑞巌寺</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span><span class="spot-extra">Map: 110 443 067*28</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <div class="spot-card">
+              <div class="spot-time">16:30–17:00</div>
+              <div class="spot-main">
+                <div class="spot-title">松島海岸散步</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+            <a class="spot-card" href="https://maps.app.goo.gl/XZfhcEMNWPXpJ8d98" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">17:00–18:00</div>
+              <div class="spot-main">
+                <div class="spot-title">抵達仙台站還車</div>
+                <div class="spot-meta"><span class="tag tag-traffic">交通</span><span class="spot-extra">Map:  21 615 653*34</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/MnJWyibh3ZgtS9G4A" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">18:00–19:00</div>
+              <div class="spot-main">
+                <div class="spot-title">Check-in：ホテルモントレ仙台</div>
+                <div class="spot-meta"><span class="tag tag-traffic">交通</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/TXTTP4R2ZG6Tzhjy8" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">19:00–20:30</div>
+              <div class="spot-main">
+                <div class="spot-title">せり草庵（晚餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Reservations: Google</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+          </div>
+        </details>
+      </section>
+
+      <!-- Day6 -->
+      <section class="day-card">
+        <details>
+          <summary>
+            <div class="day-header">
+              <div class="day-title">Day6</div>
+              <div class="day-subtitle">Tap to expand / collapse</div>
+            </div>
+          </summary>
+          <div class="day-body">
+            <a class="spot-card" href="https://maps.app.goo.gl/gYGAzjCuhCWg2thj6" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">08:30–15:30</div>
+              <div class="spot-main">
+                <div class="spot-title">Klook：狐狸村＋草莓採果</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/iNjQ6pjaS7DRDhDn7" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">16:00–17:00</div>
+              <div class="spot-main">
+                <div class="spot-title">仙台麵包超人兒童博物館</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/AZmgy4NuspxVSS7d8" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">17:15–18:00</div>
+              <div class="spot-main">
+                <div class="spot-title">AER 展望テラス</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/i72RGCb9yUNJyQJLA" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">18:00–20:00</div>
+              <div class="spot-main">
+                <div class="spot-title">仔虎仙台駅前店（晚餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Reservations: Google</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <div class="spot-card">
+              <div class="spot-time">20:00–22:00</div>
+              <div class="spot-main">
+                <div class="spot-title">仙台站周邊散步</div>
+                <div class="spot-meta"><span class="tag tag-shopping">逛街</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Day7 -->
+      <section class="day-card">
+        <details>
+          <summary>
+            <div class="day-header">
+              <div class="day-title">Day7</div>
+              <div class="day-subtitle">Tap to expand / collapse</div>
+            </div>
+          </summary>
+          <div class="day-body">
+            <div class="spot-card">
+              <div class="spot-time">09:00–10:00</div>
+              <div class="spot-main">
+                <div class="spot-title">隨意吃 吃飽一點（早餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+            <div class="spot-card">
+              <div class="spot-time">10:29</div>
+              <div class="spot-main">
+                <div class="spot-title">乘 840/S840 前往宮城峡</div>
+                <div class="spot-meta"><span class="tag tag-traffic">交通</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+            <a class="spot-card" href="https://maps.app.goo.gl/4LKBBu2mmwNnMK7K8" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">11:28–14:45</div>
+              <div class="spot-main">
+                <div class="spot-title">宮城峡蒸溜所</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <div class="spot-card">
+              <div class="spot-time">14:55</div>
+              <div class="spot-main">
+                <div class="spot-title">乘 840/S840 前往大崎八幡宮</div>
+                <div class="spot-meta"><span class="tag tag-traffic">交通</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+            <a class="spot-card" href="https://maps.app.goo.gl/q2YL45SjdNUn3J279" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">15:45–17:00</div>
+              <div class="spot-main">
+                <div class="spot-title">大崎八幡宮</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/F9eXh3T1v12PNsr4A" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">17:00–19:00</div>
+              <div class="spot-main">
+                <div class="spot-title">すき焼割烹 かとう（晚餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Reservations: Google</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <div class="spot-card">
+              <div class="spot-time">19:00–20:00</div>
+              <div class="spot-main">
+                <div class="spot-title">仙台站周邊散步</div>
+                <div class="spot-meta"><span class="tag tag-shopping">逛街</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Day8 -->
+      <section class="day-card">
+        <details>
+          <summary>
+            <div class="day-header">
+              <div class="day-title">Day8</div>
+              <div class="day-subtitle">Tap to expand / collapse</div>
+            </div>
+          </summary>
+          <div class="day-body">
+            <div class="spot-card">
+              <div class="spot-time">11:00</div>
+              <div class="spot-main">
+                <div class="spot-title">退房（行李寄放）</div>
+                <div class="spot-meta"><span class="tag tag-traffic">交通</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+            <a class="spot-card" href="https://maps.app.goo.gl/wfce3A99u9dqxbnd9" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">11:40–13:00</div>
+              <div class="spot-main">
+                <div class="spot-title">仙台大観音</div>
+                <div class="spot-meta"><span class="tag tag-sight">觀光</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <a class="spot-card" href="https://maps.app.goo.gl/ds3xxuTjcgFuPogk7" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">13:10–14:10</div>
+              <div class="spot-main">
+                <div class="spot-title">かつ丸 仙台中山店（午餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Reservations: 現場</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+            <div class="spot-card">
+              <div class="spot-time">14:10–15:30</div>
+              <div class="spot-main">
+                <div class="spot-title">仙台站採買</div>
+                <div class="spot-meta"><span class="tag tag-shopping">逛街</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </div>
+            <a class="spot-card" href="https://maps.app.goo.gl/NrAgqpE58Muh4vrE6" target="_blank" rel="noopener noreferrer">
+              <div class="spot-time">15:30–16:30</div>
+              <div class="spot-main">
+                <div class="spot-title">前往仙台空港（晚餐）</div>
+                <div class="spot-meta"><span class="tag tag-food">吃喝</span><span class="spot-extra">Reservations: 現場</span></div>
+              </div>
+              <div class="spot-arrow">➜</div>
+            </a>
+          </div>
+        </details>
+      </section>
+
+        </section>
+
+        <section id="section-expense" class="section">
+          <div class="card-light">
+            <div class="section-title">旅費記帳</div>
+            <div class="section-desc">依照下方欄位輸入，每筆會自動加總並儲存在本機。</div>
+
+            <form class="expense-form" id="expense-form"></form>
+
+            <div class="total-bar">
+              <div class="total-label">目前總金額（日圓）</div>
+              <div class="total-amount" id="total-amount">0</div>
+            </div>
+
+            <div class="expense-summary-block">
+              <details class="exp-block" open>
+                <summary>
+                  <div class="exp-summary-label">
+                    <span>記帳明細</span>
+                  </div>
+                  <span class="exp-chevron">▼</span>
+                </summary>
+                <div class="expense-list" id="expense-list">
+                  <div class="expense-empty">尚未新增任何紀錄。</div>
+                </div>
+              </details>
+
+              <details class="exp-block">
+                <summary>
+                  <div class="exp-summary-label">
+                    <span>類型圓餅圖</span>
+                  </div>
+                  <span class="exp-chevron">▼</span>
+                </summary>
+                <div class="pie-wrapper">
+                  <canvas id="expense-pie" width="260" height="180"></canvas>
+                </div>
+                <div class="pie-legend" id="pie-legend"></div>
+              </details>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const expenseFields = [
+      { label: "日期",
+        options: ["Day 1","Day 2","Day 3","Day 4","Day 5","Day 6","Day 7","Day 8"]
+      },
+      { label: "項目" },
+      { label: "類型",
+        options: ["吃喝","購物","交通","門票","雜項"]
+      },
+      { label: "金額（日幣）" }
+    ];
+	
+	// 載入時把所有 <details> 收起來
+	window.addEventListener("DOMContentLoaded", () => {
+	  document.querySelectorAll("details").forEach(d => {
+		d.removeAttribute("open");
+	  });
+	  const lightbox = document.getElementById("img-lightbox");
+	  if (lightbox) {
+	   lightbox.addEventListener("click", function (e) {
+	    // 點到圖片本身就不要關閉，只點黑底才關
+		if (e.target.id === "img-lightbox-img") return;
+		this.classList.remove("active");
+       });
+      }
+	});
+
+    function setActiveSection(section) {
+      document.querySelectorAll('.section').forEach(sec => {
+        sec.classList.toggle('active', sec.id === 'section-' + section);
+      });
+
+      document.querySelectorAll('.pill-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.section === section);
+      });
+    }
+
+    document.querySelectorAll('.pill-tab').forEach(tab => {
+      tab.addEventListener('click', () => setActiveSection(tab.dataset.section));
+    });
+
+	// 點圖片 → 開啟放大
+	document.addEventListener("click", function(e) {
+	  if (e.target.classList.contains("loople-img")) {
+		const lightbox = document.getElementById("img-lightbox");
+		const lightImg = document.getElementById("img-lightbox-img");
+
+		lightImg.src = e.target.src;
+		lightbox.classList.add("active");
+	  }
+	});
+
+
+    const formEl = document.getElementById('expense-form');
+    const expenseListEl = document.getElementById('expense-list');
+    const totalAmountEl = document.getElementById('total-amount');
+    const pieCanvas = document.getElementById('expense-pie');
+    const pieLegendEl = document.getElementById('pie-legend');
+    const pieCtx = pieCanvas.getContext ? pieCanvas.getContext('2d') : null;
+
+    function createInputId(label) {
+      return 'field-' + label.replace(/[^a-zA-Z0-9一-龯]/g, '');
+    }
+
+    function buildExpenseForm() {
+      expenseFields.forEach(field => {
+        const row = document.createElement('div');
+        row.className = 'field-row';
+
+        const label = document.createElement('label');
+        label.className = 'field-label';
+        const inputId = createInputId(field.label);
+        label.setAttribute('for', inputId);
+        label.textContent = field.label;
+        row.appendChild(label);
+
+        if (field.options && field.options.length) {
+          const select = document.createElement('select');
+          select.className = 'field-select';
+          select.id = inputId;
+
+          const placeholder = document.createElement('option');
+          placeholder.value = '';
+          placeholder.textContent = '請選擇';
+          placeholder.disabled = true;
+          placeholder.selected = true;
+          select.appendChild(placeholder);
+
+          field.options.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt;
+            option.textContent = opt;
+            select.appendChild(option);
+          });
+
+          row.appendChild(select);
+        } else {
+          const input = document.createElement('input');
+          input.className = 'field-input';
+          input.id = inputId;
+          input.type = field.label.includes('金額') ? 'number' : 'text';
+          input.inputMode = field.label.includes('金額') ? 'numeric' : 'text';
+          row.appendChild(input);
+        }
+
+        formEl.appendChild(row);
+      });
+
+      const actions = document.createElement('div');
+      actions.className = 'expense-actions';
+
+      const addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'btn btn-primary';
+      addBtn.textContent = '新增紀錄';
+      addBtn.addEventListener('click', handleAddExpense);
+
+      const clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.className = 'btn btn-secondary';
+      clearBtn.textContent = '清除全部';
+      clearBtn.addEventListener('click', handleClearExpenses);
+
+      actions.appendChild(addBtn);
+      actions.appendChild(clearBtn);
+      formEl.appendChild(actions);
+    }
+
+    let expenses = [];
+
+    function loadExpenses() {
+      try {
+        const saved = localStorage.getItem('sendai-expenses');
+        if (saved) {
+          expenses = JSON.parse(saved);
+        }
+      } catch (e) {
+        expenses = [];
+      }
+      renderExpenses();
+    }
+
+    function saveExpenses() {
+      try {
+        localStorage.setItem('sendai-expenses', JSON.stringify(expenses));
+      } catch (e) {}
+    }
+
+    function handleAddExpense() {
+      const data = {};
+      let amount = 0;
+
+      expenseFields.forEach(field => {
+        const id = createInputId(field.label);
+        const el = document.getElementById(id);
+        if (!el) return;
+        const value = el.value.trim();
+        if (!value) return;
+
+        data[field.label] = value;
+        if (field.label.includes('金額')) {
+          amount = parseInt(value, 10) || 0;
+        }
+      });
+
+      if (!Object.keys(data).length || !amount) {
+        alert('請至少輸入金額，以及一項其他欄位。');
+        return;
+      }
+
+      expenses.push({ data, amount });
+      saveExpenses();
+      renderExpenses();
+      formEl.reset();
+    }
+
+    function handleClearExpenses() {
+      if (!expenses.length) return;
+      if (!confirm('確定要清除所有紀錄嗎？')) return;
+      expenses = [];
+      saveExpenses();
+      renderExpenses();
+    }
+
+    function renderExpenses() {
+      expenseListEl.innerHTML = '';
+      if (!expenses.length) {
+        const empty = document.createElement('div');
+        empty.className = 'expense-empty';
+        empty.textContent = '尚未新增任何紀錄。';
+        expenseListEl.appendChild(empty);
+        totalAmountEl.textContent = '0';
+        drawPie({});
+        return;
+      }
+
+      let total = 0;
+      const typeTotals = {};
+
+      expenses.forEach(entry => {
+        total += entry.amount;
+        const type = entry.data['類型'] || '其他';
+        typeTotals[type] = (typeTotals[type] || 0) + entry.amount;
+
+        const row = document.createElement('div');
+        row.className = 'expense-row';
+
+        const dayLabel = entry.data['日期'] || '';
+        const day = document.createElement('div');
+        day.className = 'badge-day';
+        day.textContent = dayLabel || '未指定';
+        row.appendChild(day);
+
+        const main = document.createElement('div');
+        main.className = 'expense-main';
+
+        const title = document.createElement('div');
+        title.className = 'expense-title';
+        title.textContent = entry.data['項目'] || '(未命名)';
+        main.appendChild(title);
+
+        const meta = document.createElement('div');
+        meta.className = 'expense-meta';
+        meta.textContent = type;
+        main.appendChild(meta);
+
+        row.appendChild(main);
+
+        const amount = document.createElement('div');
+        amount.className = 'expense-amount';
+        amount.textContent = entry.amount.toLocaleString('ja-JP');
+        row.appendChild(amount);
+
+        expenseListEl.appendChild(row);
+      });
+
+      totalAmountEl.textContent = total.toLocaleString('ja-JP');
+      drawPie(typeTotals);
+    }
+
+    const typeColors = {
+      "吃喝": "#10b981",
+      "購物": "#f97373",
+      "交通": "#3b82f6",
+      "門票": "#fbbf24",
+      "雜項": "#6b7280",
+      "其他": "#9ca3af"
+    };
+
+    function drawPie(typeTotals) {
+      if (!pieCtx) return;
+      const width = pieCanvas.width;
+      const height = pieCanvas.height;
+      pieCtx.clearRect(0, 0, width, height);
+      pieLegendEl.innerHTML = "";
+
+      const entries = Object.entries(typeTotals).filter(([_, v]) => v > 0);
+      if (!entries.length) {
+        return;
+      }
+
+      const total = entries.reduce((sum, [, v]) => sum + v, 0);
+      let startAngle = -Math.PI / 2;
+      const cx = width / 2;
+      const cy = height / 2;
+      const radius = Math.min(width, height) * 0.38;
+
+      entries.forEach(([type, value]) => {
+        const angle = (value / total) * Math.PI * 2;
+        const endAngle = startAngle + angle;
+        const color = typeColors[type] || typeColors["其他"];
+
+        pieCtx.beginPath();
+        pieCtx.moveTo(cx, cy);
+        pieCtx.arc(cx, cy, radius, startAngle, endAngle);
+        pieCtx.closePath();
+        pieCtx.fillStyle = color;
+        pieCtx.fill();
+
+        startAngle = endAngle;
+
+        const legendItem = document.createElement('div');
+        legendItem.className = 'pie-legend-item';
+
+        const colorBox = document.createElement('span');
+        colorBox.className = 'pie-color-box';
+        colorBox.style.background = color;
+
+        const label = document.createElement('span');
+        const percent = Math.round((value / total) * 100);
+        label.textContent = type + " " + percent + "%";
+
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(label);
+        pieLegendEl.appendChild(legendItem);
+      });
+    }
+
+    buildExpenseForm();
+    loadExpenses();
+  </script>
+  
+ <!-- 全螢幕圖片燈箱 -->
+ <div id="img-lightbox" class="img-lightbox">
+  <img id="img-lightbox-img" src="">
+ </div>
+
+</body>
+</html>
